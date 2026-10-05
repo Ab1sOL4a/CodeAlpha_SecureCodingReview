@@ -20,17 +20,17 @@ The review focused on identifying common security vulnerabilities, performing st
 
 ```text
 CodeAlpha_SecureCodingReview/
-├── vulnerable_app/
-│   └── app.py
-├── secure_app/
-│   └── app.py
 ├── reports/
 │   └── security_review.md
-├── screenshots/
-│   └── secure_password_hash.png
-├── requirements.txt
+├── secure_app/
+│   └── app.py
+├── vulnerable_app/
+│   └── app.py
 ├── .gitignore
-└── README.md
+├──README.md
+├──requirements.txt
+└── screenshots/
+│   └── secure_password_hash.png
 
 Security Issues Identified
 The initial vulnerable application contained:
