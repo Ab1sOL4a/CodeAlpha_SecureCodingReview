@@ -1,20 +1,7 @@
 import sqlite3
-import hashlib
-import secrets
 
-DATABASE = "secure_users.db"
+DATABASE = "users.db"
 
-def hash_password(password):
-    salt = secrets.token_bytes(16)
-
-    password_hash = hashlib.pbkdf2_hmac(
-        "sha256",
-        password.encode(),
-        salt,
-        100000
-    )
-
-    return salt.hex() + ":" + password_hash.hex()
 
 def create_database():
     conn = sqlite3.connect(DATABASE)
@@ -23,8 +10,8 @@ def create_database():
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL
+            username TEXT,
+            password TEXT
         )
     """)
 
@@ -36,24 +23,16 @@ def register():
     username = input("Enter username: ")
     password = input("Enter password: ")
 
-    password_hash = hash_password(password)
-
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
 
-    query = """
-        INSERT INTO users (username, password_hash)
-        VALUES (?, ?)
-    """
+    query = f"INSERT INTO users (username, password) VALUES ('{username}', '{password}')"
+    cursor.execute(query)
 
-    try:
-        cursor.execute(query, (username, password_hash))
-        conn.commit()
-        print("Registration successful!")
-    except sqlite3.IntegrityError:
-        print("Username already exists.")
-    finally:
-        conn.close()
+    conn.commit()
+    conn.close()
+
+    print("Registration successful!")
 
 
 def login():
@@ -63,39 +42,24 @@ def login():
     conn = sqlite3.connect(DATABASE)
     cursor = conn.cursor()
 
-    query = """
-        SELECT password_hash FROM users
-        WHERE username = ?
-    """
+    query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
+    cursor.execute(query)
 
-    cursor.execute(query, (username,))
     user = cursor.fetchone()
 
     conn.close()
 
     if user:
-        stored_salt, stored_hash = user[0].split(":")
+        print("Login successful!")
+    else:
+        print("Invalid username or password.")
 
-        salt = bytes.fromhex(stored_salt)
-
-        password_hash = hashlib.pbkdf2_hmac(
-            "sha256",
-            password.encode(),
-            salt,
-            100000
-        ).hex()
-
-        if password_hash == stored_hash:
-            print("Login successful!")
-            return
-
-    print("Invalid username or password.")
 
 def main():
     create_database()
 
     while True:
-        print("\n=== Secure Login System ===")
+        print("\n=== Simple Login System ===")
         print("1. Register")
         print("2. Login")
         print("3. Exit")
@@ -114,4 +78,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
